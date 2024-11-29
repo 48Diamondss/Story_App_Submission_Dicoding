@@ -1,3 +1,53 @@
 <resources>
     <string name="app_name">Story_App</string>
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="welcome">"Welcome !"</string>
+    <string name="invalid_username">Not a valid username</string>
+    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="login_failed">"Login failed"</string>
+    <string name="hai_selamat_datang">Hai Selamat Datang</string>
+    <string name="silahkan_mengisi_email_dan_password_anda">Silahkan mengisi email dan password Anda</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="tidak_punya_akun">Tidak punya akun?</string>
+    <string name="register">Daftar Akun Sekarang</string>
+
+    <string name="error_email">Pastikan isi dengan Email yang valid</string>
+    <string name="error_password">Minimal kata sandi memiliki 8 karakter</string>
+
+    <string name="login_succes">Login Berhasil</string>
+
+    <string name="title_signup_page">Lengkapi data dirimu di bawah ini ya</string>
+    <string name="name">Name</string>
+    <string name="daftar_akun">Daftar Akun</string>
+    <string name="sudah_punya_akun">Sudah punya akun?</string>
+    <string name="signup_success">Daftar Akun Berhasil</string>
+    <string name="judul">Judul</string>
+    <string name="deskripsi">Deskripsi</string>
+    <string name="ikon_tambah">Ikon tambah</string>
+    <string name="story_kosong">story kosong karena terdapat kesalahan koneksi</string>
+    <string name="gambar_detail">Gambar Detail</string>
+    <string name="nama_pengguna">Nama Pengguna</string>
+    <string name="createdat">createdat</string>
+    <string name="detail_image">detail image</string>
+    <string name="kamera">Kamera</string>
+    <string name="galeri">Galeri</string>
+    <string name="upload">Upload</string>
+    <string name="keluar">Keluar</string>
+    <string name="konfirmasi_logout">Konfirmasi Logout</string>
+    <string name="apakah_kamu_yakin_ingin_keluar">Apakah kamu yakin ingin keluar?</string>
+
+    <string name="grant">Setujui</string>
+    <string name="cancel">Batalkan</string>
+    <string name="permission_rationale">Berikan akses ke semua izin yang diperlukan untuk kamera dan galeri untuk memastikan aplikasi berfungsi dengan baik</string>
+    <string name="no_image_selected">Tidak ada gambar yang dipilih</string>
+    <string name="New_Story_actionbar">New Story</string>
+    <string name="failed_to_process_selected_image">Failed to process selected image</string>
+
+
 </resources>
