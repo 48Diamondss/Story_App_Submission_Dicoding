@@ -23,15 +23,16 @@ class DetailActivity : AppCompatActivity() {
         binding = ActivityDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setSupportActionBar(binding.toolbar)
-        supportActionBar?.title = "Detail"
-
         // Mendapatkan ID dan token dari intent
         val storyId = intent.getStringExtra("STORY_ID")
         val userToken = intent.getStringExtra("USER_TOKEN")
 
         Log.d("DetailActivity", "Received storyId: $storyId and token: $userToken")
 
+
+        binding.btnBack2.setOnClickListener {
+            finish()
+        }
 
         storyId?.let { userToken?.let { it1 -> observeDetail(it, it1) } }
     }

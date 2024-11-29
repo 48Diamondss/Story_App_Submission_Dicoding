@@ -48,6 +48,7 @@
     <string name="no_image_selected">Tidak ada gambar yang dipilih</string>
     <string name="New_Story_actionbar">New Story</string>
     <string name="failed_to_process_selected_image">Failed to process selected image</string>
+    <string name="detail">Detail</string>
 
 
 </resources>
