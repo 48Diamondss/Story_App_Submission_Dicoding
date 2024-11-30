@@ -261,8 +261,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Define the required camera permission for all Android versions
-    private val requiredCameraPermission: String
-        get() = Manifest.permission.CAMERA
+    private val requiredCameraPermission = Manifest.permission.CAMERA
+
 
     // Define the required media permission based on the Android version (Tiramisu or older)
     private val requiredMediaPermission: String

@@ -35,6 +35,9 @@ class LoginActivity : AppCompatActivity() {
         setupView()
         setupAction()
         playAnimation()
+
+        observeLoginResult()
+        observeSessionSaved()
     }
 
     private fun setupView() {
@@ -64,7 +67,6 @@ class LoginActivity : AppCompatActivity() {
 
                 viewModel.login(email, password)
 
-                observeLoginResult()
             }
             btnRegister.setOnClickListener {
                 Log.d(tag, "Register button clicked, navigating to signup...")
@@ -87,8 +89,7 @@ class LoginActivity : AppCompatActivity() {
                 is Result.Success -> {
                     Log.d(tag, "Login successful: ${result.data}")
                     showLoading(false)
-                    showSnackbar(getString(R.string.login_succes))
-                    observeSessionSaved()
+
                 }
 
                 is Result.Error -> {
@@ -123,7 +124,6 @@ class LoginActivity : AppCompatActivity() {
         }
 
     }
-
 
     private fun playAnimation() {
         ObjectAnimator.ofFloat(binding.imageView, View.TRANSLATION_X, -30f, 30f).apply {
