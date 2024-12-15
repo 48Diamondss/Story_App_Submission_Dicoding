@@ -60,4 +60,10 @@ interface ApiService {
         @Part("lon") long: RequestBody? = null
     ): FileUploadResponse
 
+    @GET("stories")
+    suspend fun getStoriesWithLocation(
+        @Header("Authorization") token: String,
+        @Query("location") location: Int = 1,
+    ): StoryResponse
+
 }

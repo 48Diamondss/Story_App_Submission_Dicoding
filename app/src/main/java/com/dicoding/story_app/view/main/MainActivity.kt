@@ -25,6 +25,7 @@ import com.dicoding.story_app.databinding.ActivityMainBinding
 import com.dicoding.story_app.view.addStory.AddStory
 import com.dicoding.story_app.view.detail.DetailActivity
 import com.dicoding.story_app.view.login.LoginActivity
+import com.dicoding.story_app.view.maps.MapsActivity
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -104,12 +105,18 @@ class MainActivity : AppCompatActivity() {
         networkCallback = object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network) {
                 Log.d("NetworkStatus", "Network available")
-                networkViewModel.setConnectionStatus(true)
+                // Post the value on the main thread
+                runOnUiThread {
+                    networkViewModel.setConnectionStatus(true)
+                }
             }
 
             override fun onLost(network: Network) {
                 Log.d("NetworkStatus", "Network lost")
-                networkViewModel.setConnectionStatus(false)
+                // Post the value on the main thread
+                runOnUiThread {
+                    networkViewModel.setConnectionStatus(false)
+                }
             }
         }
 
@@ -215,7 +222,7 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    private fun addStory(){
+    private fun addStory() {
         binding.fab.setOnClickListener {
             checkPermissionForScan()
         }
@@ -234,6 +241,15 @@ class MainActivity : AppCompatActivity() {
                 showLogoutConfirmationDialog()
                 true
             }
+
+            R.id.maps -> {
+                Log.d("MainActivity", "Navigating to MapsActivity with token: $userToken")
+                val intent = Intent(this, MapsActivity::class.java)
+                intent.putExtra("USER_TOKEN", userToken)
+                startActivity(intent)
+                true
+            }
+
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -279,13 +295,13 @@ class MainActivity : AppCompatActivity() {
             val mediaPermissionGranted = permissions[requiredMediaPermission] == true
 
             if (cameraPermissionGranted && mediaPermissionGranted) {
-               showAddStoryActivity()
+                showAddStoryActivity()
             } else {
                 showPermissionDialog() // Show permission dialog if permissions are denied
             }
         }
 
-    private fun showAddStoryActivity(){
+    private fun showAddStoryActivity() {
         Log.d("MainActivity", "Navigating to AddStoryActivity with token: $userToken")
         val intent = Intent(this, AddStory::class.java)
         intent.putExtra("USER_TOKEN", userToken)
@@ -300,9 +316,11 @@ class MainActivity : AppCompatActivity() {
             requiredCameraPermission = requiredCameraPermission,
             requiredMediaPermission = requiredMediaPermission,
             onPermissionGranted = { showAddStoryActivity() },
-            onPermissionDenied = { requestPermissionLauncher.launch(
-                arrayOf(requiredCameraPermission, requiredMediaPermission)
-            ) }
+            onPermissionDenied = {
+                requestPermissionLauncher.launch(
+                    arrayOf(requiredCameraPermission, requiredMediaPermission)
+                )
+            }
         )
     }
 

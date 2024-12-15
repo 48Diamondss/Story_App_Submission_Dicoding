@@ -42,4 +42,8 @@ class StoryRepository @Inject constructor(private val apiService: ApiService) {
         }
     }
 
+    suspend fun getStoriesWithLocation(token: String): StoryResponse {
+        return apiService.getStoriesWithLocation("Bearer $token")
+    }
+
 }
