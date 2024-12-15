@@ -1,11 +1,10 @@
 package com.dicoding.story_app.view.main
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.dicoding.story_app.data.StoryRepository
@@ -21,12 +20,13 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val repository: UserRepository,
-    private val storyRepository: StoryRepository,
+    storyRepository: StoryRepository,
     private val permissionUtils: PermissionUtils
 ) : ViewModel() {
 
     private val _stories = MutableLiveData<PagingData<ListStoryItem>>()
-    val stories: LiveData<PagingData<ListStoryItem>> get() = _stories
+    val stories: LiveData<PagingData<ListStoryItem>> =
+        storyRepository.getAllStories().cachedIn(viewModelScope)
 
     val session: Flow<UserModel> = repository.getSession()
 
@@ -34,7 +34,7 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             session.collect { user ->
                 if (user.isLogin) {
-                    getStories("Bearer ${user.token}")
+                   Log.d("MainViewModel", "Fetching stories with token: ${user.token}")
                 } else {
                     _stories.value = PagingData.empty()
                 }
@@ -47,17 +47,11 @@ class MainViewModel @Inject constructor(
         fetchStoriesWithSession()
     }
 
-    private fun getStories(token: String) {
-        val pager = Pager(
-            config = PagingConfig(pageSize = 10, enablePlaceholders = false),
-            pagingSourceFactory = { storyRepository.getStoriesPagingSource(token) }
-        )
 
-        viewModelScope.launch {
-            pager.flow.cachedIn(viewModelScope).collect { pagingData ->
-                _stories.value = pagingData
-            }
-        }
+    // Trigger refresh stories
+    fun triggerRefreshStories() {
+        _stories.value = PagingData.empty() // Reset the stories to show loading state
+        fetchStoriesWithSession() // Re-fetch the stories after upload
     }
 
     fun logout(){

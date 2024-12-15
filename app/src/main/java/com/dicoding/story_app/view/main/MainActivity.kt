@@ -158,7 +158,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
     private fun showConnectionSnackbar(isConnected: Boolean) {
         val message = if (isConnected) "Internet connected" else "No internet connection"
         Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
@@ -216,11 +215,9 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-
     override fun onPause() {
         super.onPause()
 
-        // Simpan posisi scroll saat aktivitas dipause
         val layoutManager = binding.rvStory.layoutManager as LinearLayoutManager
         lastScrollPosition = layoutManager.findFirstVisibleItemPosition()
     }
@@ -228,13 +225,12 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        // Mengembalikan posisi scroll ke posisi terakhir yang tersimpan
+
         val layoutManager = binding.rvStory.layoutManager as LinearLayoutManager
         layoutManager.scrollToPosition(lastScrollPosition)
 
-        // Memuat ulang story tanpa harus mengulang ke posisi atas
         Log.d("MainActivity", "onResume called")
-        viewModel.fetchStoriesWithSession()
+        viewModel.refreshStories()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -258,6 +254,10 @@ class MainActivity : AppCompatActivity() {
         }
 
 
+    }
+    // Handle story upload success and trigger refresh
+    private fun handleStoryUploadSuccess() {
+        viewModel.triggerRefreshStories()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -329,6 +329,7 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent(this, AddStory::class.java)
         intent.putExtra("USER_TOKEN", userToken)
         startActivity(intent)
+        handleStoryUploadSuccess()
         Log.d("MainActivity", "All permissions granted")
     }
 

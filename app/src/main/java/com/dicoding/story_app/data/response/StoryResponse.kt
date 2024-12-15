@@ -1,5 +1,7 @@
 package com.dicoding.story_app.data.response
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 
 data class StoryResponse(
@@ -14,6 +16,7 @@ data class StoryResponse(
 	val message: String? = null
 )
 
+@Entity(tableName = "stories")
 data class ListStoryItem(
 
 	@field:SerializedName("photoUrl")
@@ -31,6 +34,7 @@ data class ListStoryItem(
 	@field:SerializedName("lon")
 	val lon: Double? = null,
 
+	@PrimaryKey
 	@field:SerializedName("id")
 	val id: String,
 
