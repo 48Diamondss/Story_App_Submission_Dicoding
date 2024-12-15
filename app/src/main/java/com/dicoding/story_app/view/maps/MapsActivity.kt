@@ -3,6 +3,7 @@ package com.dicoding.story_app.view.maps
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.MenuItem
 import android.widget.Toast
@@ -72,7 +73,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun observeStories(userToken: String?) {
-
         if (userToken != null) {
             mapViewModel.fetchStoriesWithLocation(userToken)
         }
@@ -102,10 +102,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                 boundsBuilder.include(position)
                             }
                         }
-                        // Zoom peta ke lokasi marker
+
+                        // Pusatkan kamera ke bounds yang berisi semua marker
                         val bounds = boundsBuilder.build()
                         val padding = 100
-                        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, padding))
+
+                        // Gunakan Handler untuk menunda eksekusi animateCamera
+                        Handler(mainLooper).post {
+                            mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, padding))
+                        }
                     } else {
                         Toast.makeText(this, "No markers to display", Toast.LENGTH_SHORT).show()
                     }
@@ -119,6 +124,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             Log.d("MapsActivity", "Data Maps story: $result")
         }
     }
+
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
