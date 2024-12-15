@@ -18,9 +18,10 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.paging.LoadState
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.dicoding.story_app.R
 import com.dicoding.story_app.adapter.StoryAdapter
-import com.dicoding.story_app.data.Result
 import com.dicoding.story_app.databinding.ActivityMainBinding
 import com.dicoding.story_app.view.addStory.AddStory
 import com.dicoding.story_app.view.detail.DetailActivity
@@ -28,6 +29,7 @@ import com.dicoding.story_app.view.login.LoginActivity
 import com.dicoding.story_app.view.maps.MapsActivity
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
@@ -45,6 +47,8 @@ class MainActivity : AppCompatActivity() {
     private var userToken: String? = null
     private var isDialogShown = false
 
+    // Variabel untuk menyimpan posisi scroll terakhir
+    private var lastScrollPosition = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,6 +64,9 @@ class MainActivity : AppCompatActivity() {
             if (isDialogShown) {
                 showPermissionDialog()
             }
+
+            // Ambil posisi scroll yang tersimpan
+            lastScrollPosition = savedInstanceState.getInt("lastScrollPosition", 0)
         }
 
         initConnectivityManager()
@@ -88,11 +95,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        adapter = StoryAdapter(emptyList()) { story ->
+        adapter = StoryAdapter { story ->
             moveToDetail(story.id)
         }
         binding.rvStory.adapter = adapter
     }
+
 
     // Network Handling
     private fun observeNetwork() {
@@ -182,37 +190,59 @@ class MainActivity : AppCompatActivity() {
 
     // Stories Handling
     private fun observeStories() {
-        viewModel.stories.observe(this) { result ->
-            when (result) {
-                is Result.Loading -> {
-                    binding.progressBar.visibility = View.VISIBLE
-                }
+        viewModel.stories.observe(this) { pagingData ->
+            lifecycleScope.launch {
+                adapter.submitData(pagingData)
 
-                is Result.Success -> {
-                    binding.progressBar.visibility = View.GONE
-
-                    adapter.updateStories(result.data)
-                    Log.d("MainActivity", "Stories updated: ${result.data.size}")
-
-                    adapter = StoryAdapter(result.data) { story ->
-                        moveToDetail(story.id)
+                // Observe the loading state and toggle the progress bar visibility
+                adapter.loadStateFlow.collectLatest { loadState ->
+                    when (loadState.refresh) {
+                        is LoadState.Loading -> {
+                            // Show the progress bar when data is loading
+                            binding.progressBar.visibility = View.VISIBLE
+                        }
+                        is LoadState.NotLoading -> {
+                            // Hide the progress bar when data is loaded
+                            binding.progressBar.visibility = View.GONE
+                        }
+                        is LoadState.Error -> {
+                            // Handle error state and hide the progress bar
+                            binding.progressBar.visibility = View.GONE
+                        }
                     }
-                    binding.rvStory.adapter = adapter
-                }
-
-                is Result.Error -> {
-                    binding.progressBar.visibility = View.GONE
-                    Log.e("MainActivity", "Error: ${result.error}")
                 }
             }
         }
     }
 
+
+
+    override fun onPause() {
+        super.onPause()
+
+        // Simpan posisi scroll saat aktivitas dipause
+        val layoutManager = binding.rvStory.layoutManager as LinearLayoutManager
+        lastScrollPosition = layoutManager.findFirstVisibleItemPosition()
+    }
+
     override fun onResume() {
         super.onResume()
+
+        // Mengembalikan posisi scroll ke posisi terakhir yang tersimpan
+        val layoutManager = binding.rvStory.layoutManager as LinearLayoutManager
+        layoutManager.scrollToPosition(lastScrollPosition)
+
+        // Memuat ulang story tanpa harus mengulang ke posisi atas
         Log.d("MainActivity", "onResume called")
-        viewModel.refreshStories()
+        viewModel.fetchStoriesWithSession()
     }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean("isDialogShown", isDialogShown)
+        outState.putInt("lastScrollPosition", lastScrollPosition) // Simpan posisi scroll
+    }
+
 
     private fun moveToDetail(storyId: String) {
         Log.d("MainActivity", "Navigating to detail with storyId: $storyId and token: $userToken")
@@ -267,13 +297,6 @@ class MainActivity : AppCompatActivity() {
             }
             setCancelable(true)
         }.create().show()
-    }
-
-
-    // Save the status of the dialog when configuration changes occur (e.g., rotation)
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putBoolean("isDialogShown", isDialogShown)
     }
 
     // Define the required camera permission for all Android versions

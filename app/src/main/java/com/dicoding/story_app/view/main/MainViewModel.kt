@@ -4,7 +4,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.dicoding.story_app.data.Result
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.dicoding.story_app.data.StoryRepository
 import com.dicoding.story_app.data.UserRepository
 import com.dicoding.story_app.data.pref.UserModel
@@ -22,9 +25,8 @@ class MainViewModel @Inject constructor(
     private val permissionUtils: PermissionUtils
 ) : ViewModel() {
 
-    private val _stories = MutableLiveData<Result<List<ListStoryItem>>>()
-    val stories: LiveData<Result<List<ListStoryItem>>> get() = _stories
-
+    private val _stories = MutableLiveData<PagingData<ListStoryItem>>()
+    val stories: LiveData<PagingData<ListStoryItem>> get() = _stories
 
     val session: Flow<UserModel> = repository.getSession()
 
@@ -34,7 +36,7 @@ class MainViewModel @Inject constructor(
                 if (user.isLogin) {
                     getStories("Bearer ${user.token}")
                 } else {
-                    _stories.value = Result.Error("User not logged in")
+                    _stories.value = PagingData.empty()
                 }
             }
         }
@@ -46,13 +48,14 @@ class MainViewModel @Inject constructor(
     }
 
     private fun getStories(token: String) {
+        val pager = Pager(
+            config = PagingConfig(pageSize = 10, enablePlaceholders = false),
+            pagingSourceFactory = { storyRepository.getStoriesPagingSource(token) }
+        )
+
         viewModelScope.launch {
-            _stories.value = Result.Loading
-            try {
-                val response = storyRepository.getStories(token)
-                _stories.value = Result.Success(response.listStory)
-            } catch (e: Exception) {
-                _stories.value = Result.Error(e.message ?: "An error occurred")
+            pager.flow.cachedIn(viewModelScope).collect { pagingData ->
+                _stories.value = pagingData
             }
         }
     }

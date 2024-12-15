@@ -2,6 +2,7 @@ package com.dicoding.story_app.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -9,9 +10,8 @@ import com.dicoding.story_app.data.response.ListStoryItem
 import com.dicoding.story_app.databinding.IcardStoryBinding
 
 class StoryAdapter(
-    private var stories: List<ListStoryItem>,
     private val onItemClicked: (ListStoryItem) -> Unit
-) : RecyclerView.Adapter<StoryAdapter.StoryViewHolder>() {
+) : PagingDataAdapter<ListStoryItem, StoryAdapter.StoryViewHolder>(StoryDiffCallback()) {
 
     inner class StoryViewHolder(private val binding: IcardStoryBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -37,37 +37,19 @@ class StoryAdapter(
     }
 
     override fun onBindViewHolder(holder: StoryViewHolder, position: Int) {
-        holder.bind(stories[position])
+        val story = getItem(position)
+        story?.let { holder.bind(it) }
     }
 
-    override fun getItemCount(): Int = stories.size
-
-    // Method to update the list
-    fun updateStories(newStories: List<ListStoryItem>) {
-        val diffResult = DiffUtil.calculateDiff(StoryDiffCallback(stories, newStories))
-        stories = newStories
-        diffResult.dispatchUpdatesTo(this)
-    }
-
-
-    class StoryDiffCallback(
-        private val oldList: List<ListStoryItem>,
-        private val newList: List<ListStoryItem>
-    ) : DiffUtil.Callback() {
-
-        override fun getOldListSize() = oldList.size
-
-        override fun getNewListSize() = newList.size
-
-        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-            return oldList[oldItemPosition].id == newList[newItemPosition].id
+    class StoryDiffCallback : DiffUtil.ItemCallback<ListStoryItem>() {
+        override fun areItemsTheSame(oldItem: ListStoryItem, newItem: ListStoryItem): Boolean {
+            return oldItem.id == newItem.id
         }
 
-        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-            return oldList[oldItemPosition] == newList[newItemPosition]
+        override fun areContentsTheSame(oldItem: ListStoryItem, newItem: ListStoryItem): Boolean {
+            return oldItem == newItem
         }
     }
-
 }
 
 

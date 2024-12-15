@@ -9,11 +9,14 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import javax.inject.Inject
 
-
 class StoryRepository @Inject constructor(private val apiService: ApiService) {
 
     suspend fun getStories(token: String): StoryResponse {
         return apiService.getStories(token, page = 1, size = 10, location = 0).body()!!
+    }
+
+    fun getStoriesPagingSource(token: String): StoryPagingSource {
+        return StoryPagingSource(this, token)
     }
 
     suspend fun getDetail(storyId: String, token: String): DetailResponse {
